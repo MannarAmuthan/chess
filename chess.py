@@ -53,7 +53,7 @@ class Piece:
                 if self.board[ver][self.y] is None:
                     possible_positions.append((ver, self.y))
                 else:
-                    if self.board[ver][self.y].color is self.color:
+                    if self.board[ver][self.y].color == self.color:
                         break
                     else:
                         possible_positions.append((ver, self.y))
@@ -73,7 +73,7 @@ class Piece:
                 if self.board[self.x][hor] is None:
                     possible_positions.append((self.x, hor))
                 else:
-                    if self.board[self.x][hor].color is self.color:
+                    if self.board[self.x][hor].color == self.color:
                         break
                     else:
                         possible_positions.append((self.x, hor))
@@ -100,7 +100,7 @@ class Piece:
                 if self.board[ver][hor] is None:
                     possible_positions.append((ver, hor))
                 else:
-                    if self.board[ver][hor].color is self.color:
+                    if self.board[ver][hor].color == self.color:
                         break
                     else:
                         possible_positions.append((ver, hor))
@@ -108,8 +108,8 @@ class Piece:
 
             return possible_positions
 
-        return ([*move_directionally(1, 1), *move_directionally(1, -1)],
-                [*move_directionally(-1, 1), *move_directionally(-1, -1)])
+        return (move_directionally(1, 1), move_directionally(1, -1),
+                move_directionally(-1, 1), move_directionally(-1, -1))
 
 
 class Rook(Piece):
@@ -128,8 +128,8 @@ class Bishop(Piece):
         super().__init__(x, y, color, board, 'b', number)
 
     def get_possible_moves(self):
-        forward, backward = self.get_diagonal_movable_positions()
-        return [*forward, *backward]
+        forward_left, forward_right, backward_left, backward_right = self.get_diagonal_movable_positions()
+        return [*forward_left, *forward_right, *backward_left, *backward_right]
 
 
 class Knight(Piece):
@@ -171,9 +171,9 @@ class Queen(Piece):
     def get_possible_moves(self):
         forward, backward = self.get_vertical_movable_positions()
         right, left = self.get_horizontal_movable_positions()
-        forward_d, backward_d = self.get_diagonal_movable_positions()
+        forward_left, forward_right, backward_left, backward_right = self.get_diagonal_movable_positions()
 
-        return [*forward, *backward, *forward_d, *backward_d, *left, *right]
+        return [*forward, *backward, *forward_left, *forward_right, *backward_left, *backward_right, *left, *right]
 
 
 class King(Piece):
@@ -183,7 +183,7 @@ class King(Piece):
     def get_possible_moves(self):
         forward, backward = self.get_vertical_movable_positions()
         right, left = self.get_horizontal_movable_positions()
-        forward_d, backward_d = self.get_diagonal_movable_positions()
+        forward_left, forward_right, backward_left, backward_right = self.get_diagonal_movable_positions()
         moves = []
         if forward:
             moves.append(forward[0])
@@ -193,10 +193,14 @@ class King(Piece):
             moves.append(right[0])
         if left:
             moves.append(left[0])
-        if forward_d:
-            moves.append(forward_d[0])
-        if backward_d:
-            moves.append(backward_d[0])
+        if forward_left:
+            moves.append(forward_left[0])
+        if forward_right:
+            moves.append(forward_right[0])
+        if backward_left:
+            moves.append(backward_left[0])
+        if backward_right:
+            moves.append(backward_right[0])
 
         return moves
 
@@ -208,23 +212,29 @@ class Pawn(Piece):
 
     def get_possible_moves(self):
         forward, backward = self.get_vertical_movable_positions()
-        forward_d, backward_d = self.get_diagonal_movable_positions()
+        forward_left, forward_right, backward_left, backward_right = self.get_diagonal_movable_positions()
 
         _moves = []
         if self.direction == 'down':
             if forward:
                 if self.board[forward[0][0]][forward[0][1]] is None:
                     _moves.append(forward[0])
-            if forward_d:
-                if self.board[forward_d[0][0]][forward_d[0][1]] is not None:
-                    _moves.append(forward_d[0])
+            if forward_left:
+                if self.board[forward_left[0][0]][forward_left[0][1]] is not None:
+                    _moves.append(forward_left[0])
+            if forward_right:
+                if self.board[forward_right[0][0]][forward_right[0][1]] is not None:
+                    _moves.append(forward_right[0])
         else:
             if backward:
                 if self.board[backward[0][0]][backward[0][1]] is None:
                     _moves.append(backward[0])
-            if backward_d:
-                if self.board[backward_d[0][0]][backward_d[0][1]] is not None:
-                    _moves.append(backward_d[0])
+            if backward_left:
+                if self.board[backward_left[0][0]][backward_left[0][1]] is not None:
+                    _moves.append(backward_left[0])
+            if backward_right:
+                if self.board[backward_right[0][0]][backward_right[0][1]] is not None:
+                    _moves.append(backward_right[0])
 
         return _moves
 
@@ -237,7 +247,7 @@ class Board:
     def __init__(self):
 
         self.name_and_object_map = None
-        self.board: List[List[Optional[Piece]]] = [[None for _ in range(0, 9)] for _ in range(0, 9)]
+        self.board: List[List[Optional[Piece]]] = [[None for _ in range(0, 8)] for _ in range(0, 8)]
         self.current_player = 'W'
 
     def print_board(self):
@@ -332,6 +342,11 @@ class Board:
                     self.name_and_object_map[piece] = self.board[i][j]
 
     def get_possible_moves(self, piece_id: str):
+        piece = self.name_and_object_map.get(piece_id, None)
+        if piece is None:
+            print('Wrong Key !!')
+            return None
+
         _moves = self.name_and_object_map[piece_id].get_possible_moves()
         mapped_moves = []
         horizontal_map = {0: 'a', 1: 'b', 2: 'c', 3: 'd', 4: 'e', 5: 'f', 6: 'g', 7: 'h'}
@@ -342,13 +357,11 @@ class Board:
         return mapped_moves
 
     def move_piece(self, piece_id: str, movement):
-
-        global piece
-        moves = self.get_possible_moves(piece_id)
-        try:
-            piece = self.name_and_object_map[piece_id]
-        except KeyError:
+        piece = self.name_and_object_map.get(piece_id, None)
+        if piece is None:
             print('Wrong Key !!')
+            return None
+        moves = self.get_possible_moves(piece_id)
 
         horizontal_map = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7}
         x = int(movement[0])
@@ -356,7 +369,7 @@ class Board:
 
         valid_move = False
         for move in moves:
-            if move[0] is movement[0] and move[1] is movement[1]:
+            if move[0] == movement[0] and move[1] == movement[1]:
                 valid_move = True
 
         if valid_move:
