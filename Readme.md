@@ -13,3 +13,10 @@ Simple chess game that can be played in terminal, of course with two player and 
 6 -->  Wp1 Wp2 Wp3 Wp4 Wp5 Wp6 Wp7 Wp8
 7 -->  Wr1 Wn1 Wb1 Wq1 Wk1 Wb2 Wn2 Wr2
 ```
+
+### Running
+No need to install any modules.
+
+```commandline
+python3 chess.py
+```
